@@ -1,6 +1,7 @@
 ---
 title: 夜哭是一种循环 Blog也是
 pubDatetime: 2026-06-25T13:11:10+08:00
+slug: "001"
 tags:
   - 随笔
 description: 关于我为什么又双叒叕开始写Blog了

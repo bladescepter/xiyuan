@@ -1,6 +1,7 @@
 ---
 title: Hermes发布测试以及后续更新设想
 pubDatetime: 2026-06-26T15:12:11+08:00
+slug: "002"
 tags:
   - 折腾
 description: 开始写Blog第二天，折腾一些配置。
