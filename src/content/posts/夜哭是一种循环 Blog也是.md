@@ -76,4 +76,4 @@ Blogspot、Blogbus、独立Blog（若干次）……
 
 言尽于此，后会有期。
 
-![图片](https://img.xiyuan.wiki/photo_2026-06-25_19-39-34.jpg)
+![i/2026/06/29/8h0yt5-w7kt.webp](https://img.xiyuan.wiki/i/2026/06/29/8h0yt5-w7kt.webp)
