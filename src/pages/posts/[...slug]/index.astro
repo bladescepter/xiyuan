@@ -2,7 +2,9 @@
 import { type CollectionEntry, getCollection, render } from "astro:content";
 import PostLayout from "@/layouts/PostLayout.astro";
 import Header from "@/components/Header.astro";
+import Comments from "@/components/Comments.astro";
 import Footer from "@/components/Footer.astro";
+import BackToTopButton from "@/components/BackToTopButton.astro";
 import Datetime from "@/components/Datetime.astro";
 import Tag from "@/components/Tag.astro";
 import { getPostSlug, getPostUrl } from "@/utils/getPostPaths";
@@ -12,7 +14,6 @@ import { toTransitionName } from "@/utils/toTransitionName";
 import EditPost from "./_components/EditPost.astro";
 import ShareLinks from "./_components/ShareLinks.astro";
 import BackButton from "./_components/BackButton.astro";
-import BackToTopButton from "./_components/BackToTopButton.astro";
 import AdjacentPostNav from "./_components/AdjacentPostNav.astro";
 import config from "@/config";
 
@@ -149,16 +150,17 @@ const ogImage = ogImageUrl
 
     <EditPost class="sm:hidden" {hideEditPost} {post} />
 
-    <BackToTopButton />
 
-    <ul class="mt-4 mb-8 flex flex-wrap gap-4 sm:my-8">
+    <div class="mt-4 mb-8 flex flex-wrap items-center justify-between gap-4 sm:my-8"><ul class="flex flex-wrap gap-4">
       {tags.map(tag => <Tag tag={slugifyStr(tag)} tagName={tag} size="sm" />)}
-    </ul>
+    </ul><span data-comment-toggle onclick="window.__walineToggle()" class="cursor-pointer text-accent hover:text-accent border-b-2 border-dashed border-accent/40 hover:border-accent transition-all text-sm select-none">▼ 展开评论</span></div>
 
     <ShareLinks />
 
     <hr class="my-8 border-dashed" />
 
+    <Comments />
+    <BackToTopButton />
     <AdjacentPostNav {prevPost} {nextPost} />
   </main>
   <Footer />
@@ -205,7 +207,7 @@ const ogImage = ogImageUrl
       heading.classList.add("group");
       const link = document.createElement("a");
       link.className =
-        "heading-link ms-2 no-underline opacity-75 md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100";
+        "heading-link ms-2 no-underline opacity-0 group-hover:opacity-100 focus:opacity-100";
       link.href = "#" + heading.id;
 
       const span = document.createElement("span");

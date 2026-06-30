@@ -35,7 +35,7 @@ export default {
   },
   footer: {
     copyright: "版权所有",
-    allRightsReserved: "保留所有权利。",
+    allRightsReserved: "xiyuan❤️lu",
   },
   pages: {
     tagTitle: "标签",

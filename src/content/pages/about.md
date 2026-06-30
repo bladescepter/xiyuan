@@ -4,8 +4,7 @@ description: 这里是一段东拉西扯的自我介绍
 ---
 给你们看看我生成的乌鸫头像，漂亮吗？
 
-![i/2026/06/29/8h1ck6-05sj.webp](https://img.xiyuan.wiki/i/2026/06/29/8h1ck6-05sj.webp)
-
+![i/2026/06/30/b4pyre-sz24.webp](https://img.xiyuan.wiki/i/2026/06/30/b4pyre-sz24.webp)
 ## 我是谁
 我是陆西园，一个不在媒体的记者。用还算可以的文字能力混口饭吃。
 

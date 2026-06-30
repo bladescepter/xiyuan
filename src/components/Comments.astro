@@ -1,0 +1,115 @@
+---
+// @ts-ignore
+import "@waline/client/style";
+---
+
+<style is:global>
+  .waline-container .wl-count { display: none !important; }
+  .waline-container .wl-sort { display: none !important; }
+  .waline-container .wl-reaction-title { display: none !important; }
+  .wl-action[aria-label="Markdown is supported"] { display: none !important; }
+  .wl-empty { display: none !important; }
+
+  .waline-container {
+    --waline-font-size: 15px;
+    --waline-theme-color: #8b5cf6;
+    --waline-active-color: #7c3aed;
+    --waline-color: #3d3a3e;
+    --waline-bg-color: #fffaf0;
+    --waline-bg-color-light: #fff5e6;
+    --waline-bg-color-hover: #f5ebe0;
+    --waline-border-color: #e8ddd0;
+    --waline-info-bg-color: #f5ebe0;
+    --waline-info-color: #8a8583;
+    --waline-badge-color: #8b5cf6;
+    --waline-avatar-radius: 6px;
+    --waline-box-shadow: none;
+  }
+
+  .dark .waline-container {
+    --waline-theme-color: #f59e0b;
+    --waline-active-color: #d97706;
+    --waline-color: #c9c3bc;
+    --waline-bg-color: #1e2029;
+    --waline-bg-color-light: #242631;
+    --waline-bg-color-hover: #2a2d3a;
+    --waline-border-color: #333648;
+    --waline-info-bg-color: #2a2d3a;
+    --waline-info-color: #8b8882;
+    --waline-badge-color: #f59e0b;
+    --waline-white: #1e2029;
+    --waline-light-grey: #555770;
+    --waline-dark-grey: #8b8882;
+  }
+
+/* 展开收起动画 */
+  #waline.hidden {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
+  }
+  #waline {
+    max-height: 5000px;
+    opacity: 1;
+    transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+  }
+
+  .waline-container .wl-editor,
+  .waline-container .wl-preview { border-radius: 8px; }
+  .waline-container .wl-btn { border-radius: 6px; }
+</style>
+
+<section id="comments-section" class="mt-16">
+  <div id="waline" class="waline-container hidden"></div>
+</section>
+
+<script>
+// @ts-nocheck
+// View Transitions 切换后重置状态，确保点击时在新页面上重新加载
+  document.addEventListener("astro:after-swap", () => {
+    const c = document.getElementById("waline");
+    if (c) c.innerHTML = "";
+    // 用 delete 而不是设为 false，确保下次点击走"首次加载"分支
+    try { delete window['__walineLoaded']; } catch(e) { window['__walineLoaded'] = false; }
+  });
+
+  window['__walineToggle'] = async function () {
+    const container = document.getElementById("waline");
+    if (!container) return;
+
+    if (!window['__walineLoaded']) {
+      window['__walineLoaded'] = true;
+      // 首次加载不动画，直接显示
+      container.classList.remove("hidden");
+      container.style.transition = "none";
+      // 更新按钮文字
+      const initBtn = document.querySelector("[data-comment-toggle]");
+      if (initBtn) initBtn.textContent = "▲ 收起评论";
+
+      const { init } = await import("@waline/client");
+      init({
+        el: "#waline",
+        serverURL: "https://waline.xiyuan.wiki",
+        lang: "zh",
+        dark: "html.dark",
+        noRss: true,
+        noCopyright: true,
+        imageUploader: false,
+        commentSorting: "latest",
+        reaction: false,
+        emoji: ["https://unpkg.com/@waline/emojis@1.4.0/tw-emoji"],
+        locale: { sofa: "", mail: "邮箱（选填）", link: "网址（选填）" },
+        pageSize: 10,
+      });
+    } else {
+      container.style.transition = "";
+      container.classList.toggle("hidden");
+      // 更新按钮文字
+      const btn = document.querySelector("[data-comment-toggle]");
+      if (btn) btn.textContent = container.classList.contains("hidden") ? "▼ 展开评论" : "▲ 收起评论";
+    }
+  };
+</script>

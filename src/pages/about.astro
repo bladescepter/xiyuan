@@ -5,6 +5,8 @@ import Header from "@/components/Header.astro";
 import Breadcrumb from "@/components/Breadcrumb.astro";
 import Main from "@/components/Main.astro";
 import Footer from "@/components/Footer.astro";
+import Comments from "@/components/Comments.astro";
+import BackToTopButton from "@/components/BackToTopButton.astro";
 import config from "@/config";
 
 const about = await getEntry("pages", "about");
@@ -30,7 +32,9 @@ const { Content } = await render(about);
 
   <Main pageTitle={about.data.title} class="app-prose">
     <Content />
+    <div class="text-center mb-6"><span data-comment-toggle onclick="window.__walineToggle()" class="cursor-pointer text-accent hover:text-accent border-b-2 border-dashed border-accent/40 hover:border-accent transition-all text-sm select-none">▼ 展开评论</span></div><Comments />
   </Main>
 
+  <BackToTopButton />
   <Footer />
 </Layout>
