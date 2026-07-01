@@ -4,6 +4,7 @@ pubDatetime: 2026-06-26T15:12:11+08:00
 slug: "002"
 tags:
   - 折腾
+  - Blog
 description: 开始写Blog第二天，折腾一些配置。
 ---
 如果能看到这条post，说明利用Hermes远程控制发blog的流程已经跑通啦！

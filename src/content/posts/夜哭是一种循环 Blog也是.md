@@ -4,6 +4,7 @@ pubDatetime: 2026-06-25T13:11:10+08:00
 slug: "001"
 tags:
   - 随笔
+  - Blog
 description: 关于我为什么又双叒叕开始写Blog了
 ---
 ## 一

@@ -27,8 +27,8 @@ import "@waline/client/style";
   }
 
   .dark .waline-container {
-    --waline-theme-color: #f59e0b;
-    --waline-active-color: #d97706;
+    --waline-theme-color: #ff6b01;
+    --waline-active-color: #e06000;
     --waline-color: #c9c3bc;
     --waline-bg-color: #1e2029;
     --waline-bg-color-light: #242631;
@@ -52,6 +52,7 @@ import "@waline/client/style";
     pointer-events: none;
   }
   #waline {
+    margin-top: 1.5rem;
     max-height: 5000px;
     opacity: 1;
     transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
@@ -62,9 +63,11 @@ import "@waline/client/style";
   .waline-container .wl-btn { border-radius: 6px; }
 </style>
 
-<section id="comments-section" class="mt-16">
+<section id="comments-section">
   <div id="waline" class="waline-container hidden"></div>
 </section>
+
+    <hr id="comments-hr" class="my-8 border-dashed hidden" />
 
 <script>
 // @ts-nocheck
@@ -73,6 +76,7 @@ import "@waline/client/style";
     const c = document.getElementById("waline");
     if (c) c.innerHTML = "";
     // 用 delete 而不是设为 false，确保下次点击走"首次加载"分支
+    document.getElementById("comments-hr")?.classList.add("hidden");
     try { delete window['__walineLoaded']; } catch(e) { window['__walineLoaded'] = false; }
   });
 
@@ -84,6 +88,7 @@ import "@waline/client/style";
       window['__walineLoaded'] = true;
       // 首次加载不动画，直接显示
       container.classList.remove("hidden");
+      document.getElementById("comments-hr")?.classList.remove("hidden");
       container.style.transition = "none";
       // 更新按钮文字
       const initBtn = document.querySelector("[data-comment-toggle]");
@@ -107,6 +112,7 @@ import "@waline/client/style";
     } else {
       container.style.transition = "";
       container.classList.toggle("hidden");
+      document.getElementById("comments-hr")?.classList.toggle("hidden");
       // 更新按钮文字
       const btn = document.querySelector("[data-comment-toggle]");
       if (btn) btn.textContent = container.classList.contains("hidden") ? "▼ 展开评论" : "▲ 收起评论";
