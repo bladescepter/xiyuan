@@ -2,9 +2,7 @@
 @import "./theme.css";
 @import "./typography.css";
 @import "rehype-callouts/theme/obsidian";
-
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
-
 @layer base {
   * {
     @apply border-border outline-accent/75;
@@ -20,19 +18,15 @@
     cursor: pointer;
   }
 }
-
 @utility max-w-app {
   @apply max-w-3xl;
 }
-
 @utility app-layout {
   @apply max-w-app mx-auto w-full px-4;
 }
-
 @utility active-nav {
   @apply underline decoration-wavy decoration-2 underline-offset-8;
 }
-
 :target {
   scroll-margin-block: 1rem;
 }

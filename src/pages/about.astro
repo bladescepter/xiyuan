@@ -31,7 +31,9 @@ const { Content } = await render(about);
   <Breadcrumb />
 
   <Main pageTitle={about.data.title} class="app-prose">
+    <div class="heti">
     <Content />
+    </div>
     <div class="text-center mb-6"><span onclick="window.__walineToggle()" data-comment-toggle class="cursor-pointer text-accent hover:text-accent border-b-2 border-dashed border-accent/40 hover:border-accent transition-all text-sm select-none">▼ 展开评论</span></div><Comments />
   </Main>
 
