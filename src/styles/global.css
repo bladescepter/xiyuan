@@ -30,3 +30,17 @@
 :target {
   scroll-margin-block: 1rem;
 }
+
+/* ===== 霞鹜文楷 (LxgwWenkai) 动态子集字体 ===== */
+@font-face {
+  font-family: "LxgwWenkai";
+  src: url("/fonts/lxgw-body.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 正文 / About / Hero 使用霞鹜文楷; Waline 评论区不套用(保持默认字体) */
+.heti {
+  font-family: "LxgwWenkai", "PingFang SC", "Microsoft YaHei", serif;
+}
