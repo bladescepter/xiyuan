@@ -105,10 +105,11 @@ export const GET: APIRoute = async ({ props, url }) => {
                       props: {
                         style: {
                           display: "flex",
-                          justifyContent: "space-between",
+                          justifyContent: "flex-end",
                           width: "100%",
                           marginBottom: "8px",
                           fontSize: 28,
+                          textAlign: "right",
                         },
                         children: [
                           {
