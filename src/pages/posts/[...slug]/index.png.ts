@@ -114,31 +114,6 @@ export const GET: APIRoute = async ({ props, url }) => {
                           {
                             type: "span",
                             props: {
-                              children: [
-                                "by ",
-                                {
-                                  type: "span",
-                                  props: {
-                                    style: { color: "transparent" },
-                                    children: '"',
-                                  },
-                                },
-                                {
-                                  type: "span",
-                                  props: {
-                                    style: {
-                                      overflow: "hidden",
-                                      fontWeight: "bold",
-                                    },
-                                    children: props.data.author,
-                                  },
-                                },
-                              ],
-                            },
-                          },
-                          {
-                            type: "span",
-                            props: {
                               style: { overflow: "hidden", fontWeight: "bold" },
                               children: config.site.title,
                             },
