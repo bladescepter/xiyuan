@@ -1,4 +1,5 @@
 allowBuilds:
   esbuild: true
+  fonttools: set this to true or false
   sharp: true
   ttf2woff2: true
