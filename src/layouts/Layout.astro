@@ -1,5 +1,4 @@
 ---
-import { Font } from "astro:assets";
 import { ClientRouter } from "astro:transitions";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { resolveDefaultOgImagePath } from "@/utils/resolveDefaultOgImagePath";
@@ -42,12 +41,6 @@ const rssHref = getRelativeLocaleUrl(
     <link rel="icon" type="image/png" href={getAssetPath("favicon.png") + "?v=3"} />
     <link rel="canonical" href={canonicalURL} />
     <meta name="generator" content={Astro.generator} />
-
-    <!-- Font -->
-    <Font
-      cssVariable="--font-google-sans-code"
-      preload={[{ subset: "latin", weight: 400, style: "normal" }]}
-    />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/heti/umd/heti.min.css" />
 
     <script is:inline src="https://cdn.jsdelivr.net/npm/heti/umd/heti-addon.min.js"></script>
