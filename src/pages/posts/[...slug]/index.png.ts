@@ -100,6 +100,22 @@ export const GET: APIRoute = async ({ props, url }) => {
                         children: props.data.title,
                       },
                     },
+                      {
+                        type: "p",
+                        props: {
+                          style: {
+                            fontSize: 26,
+                            color: "#666",
+                            marginTop: "12px",
+                            maxHeight: "70px",
+                            overflow: "hidden",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 3,
+                            WebkitBoxOrient: "vertical",
+                          },
+                          children: props.data.description || "",
+                        },
+                      },
                     {
                       type: "div",
                       props: {

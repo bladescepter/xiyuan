@@ -18,7 +18,7 @@ const files = fs.readdirSync(postsDir).filter(f => f.endsWith('.md'));
 for (const f of files) {
   const content = fs.readFileSync(path.join(postsDir, f), 'utf8');
   const fm = content.split('---')[1] || '';
-  for (const key of ['title', 'author']) {
+  for (const key of ['title', 'author', 'description']) {
     const m = fm.match(new RegExp('^' + key + ':\s*(.+)', 'm'));
     if (m) for (const ch of m[1].trim()) chars.add(ch);
   }
