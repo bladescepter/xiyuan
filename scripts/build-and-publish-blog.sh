@@ -1,7 +1,8 @@
 #!/bin/bash
-# 博客发布 — 读取本地笔记文章 → 上传服务器 blog 文件夹 → 构建 → 清缓存
+# 博客发布 — 本地文章 → GitHub(xiyuan) → 服务器 git pull 构建 → 清缓存
 # 用法: ./build-and-publish-blog.sh
-# 说明: 文章源为本地笔记库 C:\Obsidian（写作侧），服务器 /opt/data/obsidian_vault 副本已废弃不再读取
+# 说明: 本脚本在本机 Git Bash 运行。文章源为本地笔记库 C:\Obsidian（写作侧），
+#       经 git 推送到 bladescepter/xiyuan 仓库，服务器 /home/ubuntu/blog-astro git pull 即完成同步。
 set -euo pipefail
 
 HOST="ubuntu@119.28.143.201"
@@ -9,68 +10,58 @@ KEY="C:/Users/blade/.ssh/bladescepter.pem"
 REMOTE_DIR="/home/ubuntu/blog-astro"
 DOTENV="C:/Users/blade/OneDrive/DEV/setting-env/.env"
 BLOG_DIR="C:/Obsidian/4_创作/Blog"
+POSTS_DIR="src/content/posts"
+PAGES_DIR="src/content/pages"
 SSH_OPTS="-i $KEY -o StrictHostKeyChecking=no -o BatchMode=yes"
 
-# ===== 第零步：同步文章（本地笔记 → 服务器 posts） =====
+# ===== 第零步：同步文章（本地笔记 → 本仓库 src/content） =====
 echo "📖 0/4 同步文章..."
+
+# 清空 posts 重建（git add -A 会自动记录删除）
+rm -f "$POSTS_DIR"/*.md
+copied=0
+for f in "$BLOG_DIR"/[1-9]*.md; do
+  [ -f "$f" ] || continue
+  newname=$(basename "$f" | sed 's/^[0-9][0-9]*_//')
+  cp "$f" "$POSTS_DIR/$newname"
+  copied=$((copied + 1))
+done
 
 # About 页 (0_*.md)
 about_file=$(find "$BLOG_DIR" -maxdepth 1 -name '0_*.md' -print -quit)
 if [ -n "$about_file" ]; then
-  scp $SSH_OPTS "$about_file" "$HOST:$REMOTE_DIR/src/content/pages/about.md"
+  cp "$about_file" "$PAGES_DIR/about.md"
   echo "  ✅ About 页已更新"
 fi
+echo "  ✅ $copied 篇文章已同步"
 
-# 文章同步
-mkdir -p /tmp/blog_sync
-rm -f /tmp/blog_sync/*.md
-copied=0
-for f in "$BLOG_DIR"/[1-9]*.md; do
-  [ -f "$f" ] || continue
-  basename=$(basename "$f")
-  newname=$(echo "$basename" | sed 's/^[0-9][0-9]*_//')
-  cp "$f" "/tmp/blog_sync/$newname"
-  copied=$((copied + 1))
-done
-
-if [ "$copied" -gt 0 ]; then
-  (cd /tmp/blog_sync && tar c *.md 2>/dev/null) | \
-    ssh $SSH_OPTS "$HOST" "tar x -C $REMOTE_DIR/src/content/posts/"
-  # 删除 Astro 中已不存在的文件
-  ssh $SSH_OPTS "$HOST" \
-    "cd $REMOTE_DIR/src/content/posts && ls *.md" > /tmp/remote_posts.txt
-  while IFS= read -r remote_file; do
-    [ -f "/tmp/blog_sync/$remote_file" ] || {
-      ssh $SSH_OPTS "$HOST" "rm -f \"$REMOTE_DIR/src/content/posts/$remote_file\""
-      echo "  🗑️  移除: $remote_file"
-    }
-  done < /tmp/remote_posts.txt
-  echo "  ✅ $copied 篇文章已同步"
+# ===== 第一步：推送到 GitHub =====
+echo "🚀 1/4 推送文章到 GitHub..."
+git add -A "$POSTS_DIR" "$PAGES_DIR"
+if git diff --cached --quiet; then
+  echo "  ⚠️  文章无变化，跳过推送"
 else
-  echo "  ⚠️  没有找到文章"
-fi
-rm -rf /tmp/blog_sync /tmp/remote_posts.txt
-
-# ===== 第一步：子集化（正文） =====
-echo "📦 1/4 子集化字体（正文）..."
-ssh $SSH_OPTS "$HOST" \
-  "cd $REMOTE_DIR && node scripts/subset-body.mjs" || {
-    echo "❌ 正文子集化失败"
+  git commit -m "发布博客 $(date +%Y-%m-%d)" >/dev/null
+  git push origin main || {
+    echo "❌ 推送失败"
     exit 1
   }
+  echo "  ✅ 已推送"
+fi
 
-# ===== 第二步：子集化（OG） =====
-echo "📦 2/4 子集化字体（OG）..."
+# ===== 第二步：服务器拉取并子集化 =====
+echo "📦 2/4 服务器拉取 + 子集化..."
 ssh $SSH_OPTS "$HOST" \
-  "cd $REMOTE_DIR && node scripts/subset-og.mjs" || {
-    echo "❌ OG 子集化失败"
+  "cd $REMOTE_DIR && git pull --ff-only origin main && \
+   node scripts/subset-body.mjs && node scripts/subset-og.mjs" || {
+    echo "❌ 拉取/子集化失败"
     exit 1
   }
 
 # ===== 第三步：构建 =====
 echo "🏗️  3/4 Astro 构建..."
 ssh $SSH_OPTS "$HOST" \
-  "cd $REMOTE_DIR && source ~/.nvm/nvm.sh && nvm use 22 && pnpm build" || {
+  "cd $REMOTE_DIR && source ~/.nvm/nvm.sh && nvm use 22 --silent && pnpm build" || {
     echo "❌ 构建失败"
     exit 1
   }

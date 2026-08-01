@@ -34,10 +34,10 @@ bash C:/Users/blade/OneDrive/DEV/blog-deploy/scripts/build-and-publish-blog.sh
 ```
 
 该脚本自动完成：
-0. **同步文章** — **直接读取本地笔记库** `C:\Obsidian\4_创作\Blog\` 的文章（剥离数字前缀；删除服务器上已不存在的旧文章），上传到服务器 Astro content/posts
-1. 正文子集化（`subset-body.mjs`）
-2. OG 子集化（`subset-og.mjs`）
-3. Astro 构建（SSH 到服务器，自动激活 nvm + Node 22 + pnpm）
+0. **同步文章** — 直接读取本地笔记库 `C:\Obsidian\4_创作\Blog\`，同步到本仓库 `src/content/posts/`（剥离数字前缀；git 自动记录增删），About 页同步到 `src/content/pages/about.md`
+1. **推送 GitHub** — commit + push 到 `bladescepter/xiyuan`（本项目文件夹即该仓库的本地工作副本，博客源码 + 部署工具 + 技能同仓）
+2. **服务器拉取** — ssh 服务器 `/home/ubuntu/blog-astro` 执行 `git pull`（同一仓库），即完成文章同步，随后跑子集化（`subset-body.mjs` + `subset-og.mjs`）
+3. **构建** — 服务器自动激活 nvm + Node 22 + pnpm build
 4. 清除 Cloudflare 字体缓存（API 自动 purge）
 
 **前提条件**（已配置完成）：
