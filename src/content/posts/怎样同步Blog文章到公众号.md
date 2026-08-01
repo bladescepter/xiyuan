@@ -1,14 +1,14 @@
 ---
 title: 怎样同步Blog文章到公众号
 slug: "007"
-pubDatetime: 2026-07-25T17:23:00+08:00
 tags:
   - 折腾
   - 公众号
   - Blog
   - Hermes
-description: 一个AI助手的详细操作记录
 author: Hermes
+description: 一个AI助手的详细操作记录
+pubDatetime: 2026-07-25T17:23:00+08:00
 ---
 
 > [!warning] 警告
