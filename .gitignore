@@ -33,3 +33,13 @@ public/pagefind
 compose.override.yaml
 /dist/
 node_modules/
+
+# 本地凭据与密钥（Windows）
+*.pem
+*.key
+*.ppk
+.env.*
+
+# Windows 系统文件
+Thumbs.db
+Desktop.ini
