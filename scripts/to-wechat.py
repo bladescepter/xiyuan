@@ -7,34 +7,34 @@ import re
 import html
 
 
-# warm-orange 主题样式
+# business-navy 主题样式（深蓝 + 金色点缀）
 STYLES = {
-    "body": "font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; font-size: 15.5px; color: #3a2a1e; line-height: 1.85; letter-spacing: 0.35px; padding: 20px 22px; background: #fdf8f2;",
-    "h2": "font-size: 18px; font-weight: 800; color: #3a2a1e; margin: 36px 0 16px; padding: 4px 0 4px 14px; border-left: 4px solid #e58b3a; line-height: 1.5; letter-spacing: 0.3px;",
-    "h3": "font-size: 15.5px; font-weight: 700; color: #b5601c; margin: 28px 0 12px; padding: 0; letter-spacing: 0.3px;",
-    "p": "margin: 16px 0; text-indent: 0; text-align: justify; color: #3a2a1e; line-height: 1.9;",
-    "blockquote": "margin: 26px 0; padding: 18px 22px; background: #fbe8d0; color: #6a3f1f; font-size: 14.5px; border-radius: 12px; line-height: 1.85; letter-spacing: 0.3px;",
-    "strong": "color: #b5601c; font-weight: 800;",
-    "em": "font-style: italic; color: #7a5a3a;",
-    "code_inline": "background: #fbe8d0; color: #b5601c; padding: 2px 8px; border-radius: 6px; font-size: 13px; font-family: 'JetBrains Mono', 'Menlo', 'Consolas', monospace; border: 1px solid #f4d8b0;",
-    "code_block": "background: #2d1f10; color: #fbe8d0; padding: 16px 18px; border-radius: 12px; font-size: 12.5px; line-height: 1.65; font-family: 'JetBrains Mono', 'Menlo', 'Consolas', monospace; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; margin: 24px 0;",
+    "body": "font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; font-size: 15.5px; color: #0f1a33; line-height: 1.8; letter-spacing: 0.35px; word-spacing: 1.5px; padding: 20px 22px; background: #ffffff;",
+    "h2": "font-size: 18px; font-weight: 800; color: #0b2445; margin: 40px 0 18px; padding: 2px 0 2px 16px; border-left: 4px solid #c9a74a; line-height: 1.5; letter-spacing: 0.3px;",
+    "h3": "font-size: 15.5px; font-weight: 700; color: #0b2445; margin: 28px 0 12px; padding: 0; letter-spacing: 0.3px;",
+    "p": "margin: 16px 0; text-indent: 0; text-align: justify; color: #1a233a; line-height: 1.85;",
+    "blockquote": "margin: 24px 0; padding: 18px 22px; background: #f4f6fb; border-left: 3px solid #c9a74a; color: #2a3552; font-size: 14.5px; border-radius: 0; line-height: 1.85; letter-spacing: 0.3px;",
+    "strong": "color: #0b2445; font-weight: 800; border-bottom: 2px solid #c9a74a; padding: 0 1px;",
+    "em": "font-style: italic; color: #5a6580;",
+    "code_inline": "background: #eef2f8; color: #0b2445; padding: 2px 7px; border-radius: 2px; font-size: 13px; font-family: 'JetBrains Mono', 'Menlo', 'Consolas', monospace; border: 1px solid #d6dde9;",
+    "code_block": "background: #0b2445; color: #e7ecf5; padding: 16px 18px; border-radius: 4px; font-size: 12.5px; line-height: 1.65; font-family: 'JetBrains Mono', 'Menlo', 'Consolas', monospace; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; margin: 24px 0; border: 1px solid #1a3360;",
     "ul": "margin: 18px 0; padding-left: 0; list-style: none;",
-    "ol": "margin: 18px 0; padding-left: 28px; color: #e58b3a; font-weight: 700;",
-    "li": "margin: 10px 0; line-height: 1.85; color: #3a2a1e; font-weight: 400;",
-    "hr": "border: none; height: 1px; background: linear-gradient(to right, transparent, #e58b3a, transparent); margin: 38px 0; opacity: 0.6;",
-    "a": "color: #b5601c; text-decoration: none; border-bottom: 1px solid rgba(181,96,28,0.4);",
-    "table": "width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; border-radius: 10px; overflow: hidden; border: 1px solid #f4d8b0;",
-    "th": "background: #e58b3a; color: #ffffff; padding: 10px 12px; text-align: left; font-weight: 700; font-size: 12.5px; letter-spacing: 0.3px;",
-    "td": "padding: 10px 8px; border-bottom: 1px solid #fbe8d0; color: #3a2a1e; font-size: 13px;",
-    "img": "max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 6px 20px rgba(229,139,58,0.15); border: 1px solid #f4d8b0; display: block; margin: 24px auto;",
+    "ol": "margin: 18px 0; padding-left: 28px; color: #c9a74a; font-weight: 700;",
+    "li": "margin: 10px 0; line-height: 1.8; color: #1a233a; font-weight: 400;",
+    "hr": "border: none; height: 1px; background: linear-gradient(to right, transparent, #c9a74a, transparent); margin: 40px 0;",
+    "a": "color: #1a4480; text-decoration: none; border-bottom: 1px solid rgba(26,68,128,0.4);",
+    "table": "width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; border-top: 2px solid #0b2445; border-bottom: 2px solid #0b2445; table-layout: fixed; word-break: break-word;",
+    "th": "background: #0b2445; color: #c9a74a; padding: 10px 12px; text-align: left; font-weight: 700; font-size: 12.5px; letter-spacing: 1px; word-break: break-word; line-height: 1.5;",
+    "td": "padding: 10px 8px; border-bottom: 1px solid #e6ebf3; color: #1a233a; font-size: 13px; word-break: break-word; line-height: 1.55;",
+    "img": "max-width: 100%; height: auto; border-radius: 2px; box-shadow: 0 6px 20px rgba(11,36,69,0.1); border: 1px solid #e0e5ee; display: block; margin: 24px auto;",
 }
 
 
 CALLOUT_STYLES = {
     "note": {"border": "#2e5bff", "bg": "#eef2ff", "icon": "ℹ️ "},
-    "abstract": {"border": "#7a5a3a", "bg": "#f4ead8", "icon": "📝 "},
-    "summary": {"border": "#7a5a3a", "bg": "#f4ead8", "icon": "📝 "},
-    "tldr": {"border": "#7a5a3a", "bg": "#f4ead8", "icon": "📝 "},
+    "abstract": {"border": "#5a6580", "bg": "#eef2f8", "icon": "📝 "},
+    "summary": {"border": "#5a6580", "bg": "#eef2f8", "icon": "📝 "},
+    "tldr": {"border": "#5a6580", "bg": "#eef2f8", "icon": "📝 "},
     "info": {"border": "#5a9e8f", "bg": "#e0f0ec", "icon": "ℹ️ "},
     "todo": {"border": "#5a9e8f", "bg": "#e0f0ec", "icon": "✅ "},
     "tip": {"border": "#5a9e8f", "bg": "#e0f0ec", "icon": "💡 "},
@@ -46,18 +46,18 @@ CALLOUT_STYLES = {
     "question": {"border": "#5a9e8f", "bg": "#e0f0ec", "icon": "❓ "},
     "help": {"border": "#5a9e8f", "bg": "#e0f0ec", "icon": "❓ "},
     "faq": {"border": "#5a9e8f", "bg": "#e0f0ec", "icon": "❓ "},
-    "warning": {"border": "#e58b3a", "bg": "#fbe8d0", "icon": "⚠️ "},
-    "caution": {"border": "#e58b3a", "bg": "#fbe8d0", "icon": "⚠️ "},
-    "attention": {"border": "#e58b3a", "bg": "#fbe8d0", "icon": "⚠️ "},
+    "warning": {"border": "#c9a74a", "bg": "#f8f3e3", "icon": "⚠️ "},
+    "caution": {"border": "#c9a74a", "bg": "#f8f3e3", "icon": "⚠️ "},
+    "attention": {"border": "#c9a74a", "bg": "#f8f3e3", "icon": "⚠️ "},
     "failure": {"border": "#c43a30", "bg": "#fce8e4", "icon": "❌ "},
     "fail": {"border": "#c43a30", "bg": "#fce8e4", "icon": "❌ "},
     "missing": {"border": "#c43a30", "bg": "#fce8e4", "icon": "❌ "},
     "danger": {"border": "#c43a30", "bg": "#fce8e4", "icon": "⚡ "},
     "error": {"border": "#c43a30", "bg": "#fce8e4", "icon": "⚡ "},
     "bug": {"border": "#c43a30", "bg": "#fce8e4", "icon": "🐞 "},
-    "example": {"border": "#7a5a3a", "bg": "#f4ead8", "icon": "💡 "},
-    "quote": {"border": "#9c8060", "bg": "#f4ead8", "icon": "💬 "},
-    "cite": {"border": "#9c8060", "bg": "#f4ead8", "icon": "💬 "},
+    "example": {"border": "#5a6580", "bg": "#eef2f8", "icon": "💡 "},
+    "quote": {"border": "#7a85a0", "bg": "#eef2f8", "icon": "💬 "},
+    "cite": {"border": "#7a85a0", "bg": "#eef2f8", "icon": "💬 "},
 }
 # 规范化为小写键
 CALLOUT_STYLES = {k.lower(): v for k, v in CALLOUT_STYLES.items()}
@@ -127,7 +127,7 @@ def md_to_wechat_html(md_text: str, title: str = "", author: str = "", source_ur
                 html_parts.append(
                     f'<div style="margin: 24px 0; padding: 16px 18px; background: {cs["bg"]}; '
                     f'border-left: 4px solid {cs["border"]}; border-radius: 8px; '
-                    f'color: #3a2a1e; font-size: 14.5px; line-height: 1.8;">'
+                    f'color: #1a233a; font-size: 14.5px; line-height: 1.8;">'
                     f'{title_html}{content}</div>'
                 )
             else:
@@ -240,16 +240,16 @@ def md_to_wechat_html(md_text: str, title: str = "", author: str = "", source_ur
 
     # 开头和结尾装饰
     header = ('<section style="text-align: center;">\n'
-              f'  <p style="color: #e58b3a; font-size: 18px; margin: 10px 0 6px; user-select: none; opacity: 0.6; letter-spacing: 2px;">(ㅅ˘ㅂ˘)  Hi~</p>\n'
-              f'  <hr style="border: none; height: 1px; background: linear-gradient(to right, transparent, #e58b3a, transparent); margin: 0 0 24px; opacity: 0.4;">\n'
+              f'  <p style="color: #c9a74a; font-size: 18px; margin: 10px 0 6px; user-select: none; opacity: 0.6; letter-spacing: 2px;">(ㅅ˘ㅂ˘)  Hi~</p>\n'
+              f'  <hr style="border: none; height: 1px; background: linear-gradient(to right, transparent, #c9a74a, transparent); margin: 0 0 24px; opacity: 0.4;">\n'
               f'</section>')
 
     footer = ""
     if source_url:
-        footer = (f'  <hr style="border: none; height: 1px; background: linear-gradient(to right, transparent, #e58b3a, transparent); margin: 32px 0 6px; opacity: 0.4;">\n'
-                  f'  <p style="text-align: center; color: #e58b3a; font-size: 18px; margin: 0 0 12px; user-select: none; opacity: 0.6; letter-spacing: 2px;">( ´ ω ` )ノﾞ  Bye~Bye~</p>\n'
-                  f'  <section style="text-align: center; color: #9c8060; font-size: 13px; opacity: 0.7; padding-bottom: 10px;">\n'
-                  f'    <p>本文首发于 <a href="{source_url}" style="color: #b5601c; text-decoration: none; border-bottom: 1px solid rgba(181,96,28,0.3);">xiyuan.wiki</a></p>\n'
+        footer = (f'  <hr style="border: none; height: 1px; background: linear-gradient(to right, transparent, #c9a74a, transparent); margin: 32px 0 6px; opacity: 0.4;">\n'
+                  f'  <p style="text-align: center; color: #c9a74a; font-size: 18px; margin: 0 0 12px; user-select: none; opacity: 0.6; letter-spacing: 2px;">( ´ ω ` )ノﾞ  Bye~Bye~</p>\n'
+                  f'  <section style="text-align: center; color: #7a85a0; font-size: 13px; opacity: 0.7; padding-bottom: 10px;">\n'
+                  f'    <p>本文首发于 <a href="{source_url}" style="color: #1a4480; text-decoration: none; border-bottom: 1px solid rgba(26,68,128,0.3);">xiyuan.wiki</a></p>\n'
                   f'  </section>')
 
     return (f'<section style="{STYLES["body"]}">\n'
@@ -337,4 +337,9 @@ if __name__ == '__main__':
     # 延迟导入 urllib（只需在 main 里用）
     import urllib.request
     import urllib.error
+    # Windows GBK 控制台打印 emoji 会 UnicodeEncodeError，强制 UTF-8 输出
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
     main()
