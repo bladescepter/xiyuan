@@ -1,35 +1,35 @@
-# build output
+# 构建输出
 dist/
 
-# generated types
+# 生成的类型文件
 .astro/
 
-# dependencies
+# 依赖目录
 node_modules/
 
-# logs
+# 日志文件
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# environment variables
+# 环境变量文件
 .env
 .env.production
 
-# macOS-specific files
+# macOS 系统文件
 .DS_Store
 
-# jetbrains setting folder
+# JetBrains 配置目录
 .idea/
 
-# pagefind
+# Pagefind 索引目录
 public/pagefind
 
-# pnpm
+# pnpm 本地缓存
 .pnpm-store
 
-# docker compose
+# Docker Compose 覆盖配置
 compose.override.yaml
 /dist/
 node_modules/
@@ -44,7 +44,11 @@ node_modules/
 Thumbs.db
 Desktop.ini
 
-# 本地工作说明（含运维细节，不入库）
-AGENTS.md
-.omp/RULES.md
-.omp/skills/
+# AGENTS.md 是项目级 Pi 上下文文件，随仓库同步
+
+# Pi 的运行状态与本地安装内容（不入库）
+# .pi/settings.json、skills、prompts、extensions、themes 等项目资源纳入版本控制
+.pi/sessions/
+.pi/npm/
+.pi/git/
+.pi/hindsight/
