@@ -12,10 +12,10 @@
   → 服务器 /home/ubuntu/blog-astro git pull（同一仓库，即完成文章同步）
   → subset-body.mjs + subset-og.mjs 子集化
   → pnpm build（Caddy 只读挂载 dist，构建即上线）
-  → 清 Cloudflare 缓存（字体 woff2）
+  → 通过 Pi 的 cloudflare-api MCP 清理唯一字体 URL 缓存
 ```
 
-- 一键发布：`bash C:/Users/blade/OneDrive/DEV/blog-deploy/scripts/build-and-publish-blog.sh`（本机 Git Bash）
+- 一键发布：`bash C:/Users/blade/OneDrive/DEV/blog-deploy/scripts/build-and-publish-blog.sh`（本机 Git Bash；要求 Pi CLI 和 cloudflare-api MCP 已连接）
 - 发布前置：服务器工作树必须干净（pull --ff-only）；任一步失败报错退出，不静默
 - 文章变更经 git 流转，绕开 Windows→SSH 流式传输（tar/scp 曾挂起）
 - VPS 侧 `/opt/data/obsidian_vault` 笔记副本**已废弃**，管线不再读取
@@ -38,7 +38,7 @@ ssh -i "C:/Users/blade/.ssh/bladescepter.pem" ubuntu@119.28.143.201 "<命令>"
 | Web 服务器 | Caddy 容器（独立容器，非 compose），只读挂载 `/home/ubuntu/blog-astro/dist` 为容器内 `/blog` |
 | VPS | VMISS HK，`119.28.143.201`，用户 ubuntu，Node 22（nvm）+ pnpm |
 | 仓库 | `bladescepter/xiyuan`（源码 + 工具 + 技能同仓，文章经此流转） |
-| 凭据 | Cloudflare API Token / Zone ID、微信公众号 AppID/Secret 在本地 `C:/Users/blade/OneDrive/DEV/setting-env/.env` |
+| 凭据 | 微信公众号 AppID/Secret 在本地 `C:/Users/blade/OneDrive/DEV/setting-env/.env`；Cloudflare 缓存通过 Pi 用户级 `cloudflare-api` MCP OAuth 完成 |
 
 ## 目录结构
 
@@ -57,7 +57,7 @@ ssh -i "C:/Users/blade/.ssh/bladescepter.pem" ubuntu@119.28.143.201 "<命令>"
 
 | 文件 | 说明 |
 |---|---|
-| `scripts/build-and-publish-blog.sh` | 一键发布（本地 → GitHub → 服务器构建 → 清缓存），本机运行 |
+| `scripts/build-and-publish-blog.sh` | 一键发布（本地 → GitHub → 服务器构建 → Cloudflare MCP 清理指定缓存），本机运行 |
 | `scripts/backup-blog-astro.sh` | 服务器侧博客源码每日备份（cron 02:00） |
 | `scripts/to-wechat.sh` / `to-wechat.py` | 微信公众号草稿（服务器侧 `/opt/data/scripts/`） |
 
@@ -77,7 +77,7 @@ ssh -i "C:/Users/blade/.ssh/bladescepter.pem" ubuntu@119.28.143.201 "<命令>"
 每轮对话重新挂载。违反前先停下来。
 
 - **重操作先确认**：完整发布（推送 GitHub + 服务器重建 + 清缓存）、重建容器、改 Caddy/DNS/密钥前，必须先获得用户明确确认。
-- **凭据不泄露**：API token / 密钥不打印、不入日志、不进 git；凭据只存本地 `.env`（`C:/Users/blade/OneDrive/DEV/setting-env/.env`），不发送到 Telegram/GitHub。
+- **凭据不泄露**：API token / 密钥不打印、不入日志、不进 git；普通凭据只存本地 `.env`（`C:/Users/blade/OneDrive/DEV/setting-env/.env`）。Cloudflare MCP OAuth 凭据仅由 Pi 保存在用户级 auth store 管理，不读取、复制或写入仓库，不发送到 Telegram/GitHub。
 - **失败不静默**：脚本/任务失败必须告警、重试（≤3 次）或报错退出，严禁静默失败。
 - **发布前确认本地文件**：用户说「改好了，发布」时，先确认 `C:\Obsidian\4_创作\Blog\` 下文件确实包含改动（读 frontmatter / 关键段落）；没看到就直接告知，停下等确认。**绝不替用户重写文件、绝不凭印象假设内容、绝不自己改 slug/正文去「补全」。**
 - **修改方案先汇报再执行**：涉及模板/配置/样式修改（.astro、CSS、主题），先分析原因、给出方案（含替代方案），等用户确认后再动手。

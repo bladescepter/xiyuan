@@ -38,10 +38,10 @@ bash C:/Users/blade/OneDrive/DEV/blog-deploy/scripts/build-and-publish-blog.sh
 1. **推送 GitHub** — commit + push 到 `bladescepter/xiyuan`（本项目文件夹即该仓库的本地工作副本，博客源码 + 部署工具 + 技能同仓）
 2. **服务器拉取** — ssh 服务器 `/home/ubuntu/blog-astro` 执行 `git pull`（同一仓库），即完成文章同步，随后跑子集化（`subset-body.mjs` + `subset-og.mjs`）
 3. **构建** — 服务器自动激活 nvm + Node 22 + pnpm build
-4. 清除 Cloudflare 字体缓存（API 自动 purge）
+4. **Cloudflare 缓存清理** — 构建成功后由脚本调用 Pi CLI，使用已授权的 `cloudflare-api` MCP 仅清理字体 URL
 
 **前提条件**（已配置完成）：
-- Cloudflare API Token + Zone ID 存在本地 `C:/Users/blade/OneDrive/DEV/setting-env/.env`（仅 Cache Purge 权限）
+- Pi CLI 可从 Git Bash 的 PATH 执行；全局 `cloudflare-api` MCP 已授权并连通，授权至少包含 `zone.read` 和 `cache.purge`（可用 `pi mcp list` 检查连接）。OAuth 凭据由 Pi 管理，无需 Cloudflare API Token 或 Zone ID `.env`
 - 本机 Git Bash 可用（ssh/scp/tar/curl/python）
 - SSH 密钥 `C:/Users/blade/.ssh/bladescepter.pem` 可访问 `ubuntu@119.28.143.201`
 
@@ -172,14 +172,8 @@ Telegram 对链接预览缓存极久（可能数天到数周）。每次修改 O
   0b. **再查 CDN 缓存**：`curl -sI https://xiyuan.wiki/fonts/lxgw-body.woff2 | grep -i 'cf-cache-status'`
 > 返回 `HIT` 说明缓存未更新。用 `?v=N` 破缓存验证实际文件。
 >
-> **手动清除 Cloudflare 缓存（备份命令，当脚本的自动 purge 失败时使用）：**
-> ```bash
-> source /opt/data/.env
-> curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
->   -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
->   -H "Content-Type: application/json" \
->   -d '{"files":["https://xiyuan.wiki/fonts/lxgw-body.woff2"]}'
-> ```
+> **通过 MCP 手动清除 Cloudflare 缓存（仅在脚本的 MCP 阶段失败时）**：
+> 检查 `pi mcp list` 中 `cloudflare-api` 为 connected；若当前 Pi 会话未加载该服务，运行 `/reload` 或重新启动 Pi。通过 Cloudflare API MCP 的 `search` 确认接口，再用 `execute` 精确查询 `xiyuan.wiki` Zone，并只清理 `https://xiyuan.wiki/fonts/lxgw-body.woff2`。必须确认 Zone 名称唯一且 API 返回成功；不要清全站缓存，也不要回退到 API Token 或 `.env`。
 >
 > **CI=true 不再需要（pnpm 11+）**：2026-07 升级到 Node 22 + pnpm 11.9 后，非 TTY 下 `pnpm build` 已不再弹出 `confirmModulesPurge` 确认。`CI=true` 前缀可以省略。如果未来 pnpm 版本变动导致构建挂起等待输入，再加回 `CI=true`。
 >

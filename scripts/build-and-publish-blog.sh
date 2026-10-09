@@ -1,18 +1,37 @@
 #!/bin/bash
-# 博客发布 — 本地文章 → GitHub(xiyuan) → 服务器 git pull 构建 → 清缓存
+# 博客发布 — 本地文章 → GitHub(xiyuan) → 服务器 git pull 构建 → Cloudflare MCP 清缓存
 # 用法: ./build-and-publish-blog.sh
 # 说明: 本脚本在本机 Git Bash 运行。文章源为本地笔记库 C:\Obsidian（写作侧），
 #       经 git 推送到 bladescepter/xiyuan 仓库，服务器 /home/ubuntu/blog-astro git pull 即完成同步。
 set -euo pipefail
 
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
+
 HOST="ubuntu@119.28.143.201"
 KEY="C:/Users/blade/.ssh/bladescepter.pem"
 REMOTE_DIR="/home/ubuntu/blog-astro"
-DOTENV="C:/Users/blade/OneDrive/DEV/setting-env/.env"
 BLOG_DIR="C:/Obsidian/4_创作/Blog"
 POSTS_DIR="src/content/posts"
 PAGES_DIR="src/content/pages"
 SSH_OPTS="-i $KEY -o StrictHostKeyChecking=no -o BatchMode=yes"
+PURGE_URL="https://xiyuan.wiki/fonts/lxgw-body.woff2"
+
+if ! command -v pi >/dev/null 2>&1; then
+  echo "❌ 未找到 Pi CLI，无法通过 Cloudflare MCP 清除缓存。" >&2
+  exit 1
+fi
+MCP_STATUS=$(pi mcp list 2>&1) || {
+  echo "❌ 无法连接 Cloudflare MCP。请先完成 cloudflare-api 登录。" >&2
+  printf '%s\n' "$MCP_STATUS" >&2
+  exit 1
+}
+if ! printf '%s\n' "$MCP_STATUS" | grep -Fq 'cloudflare-api: connected'; then
+  echo "❌ cloudflare-api MCP 未连接，停止发布。" >&2
+  printf '%s\n' "$MCP_STATUS" >&2
+  exit 1
+fi
+echo "🔌 Cloudflare MCP 已连接"
 
 # ===== 第零步：同步文章（本地笔记 → 本仓库 src/content） =====
 echo "📖 0/4 同步文章..."
@@ -66,21 +85,30 @@ ssh $SSH_OPTS "$HOST" \
     exit 1
   }
 
-# ===== 第四步：清 CDN 缓存 =====
-echo "🧹 4/4 清除 Cloudflare 缓存..."
-source "$DOTENV"
-PURGE_URLS='{"files":["https://xiyuan.wiki/fonts/lxgw-body.woff2"]}'
-RESULT=$(curl -s -X POST \
-  "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
-  -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d "$PURGE_URLS")
+# ===== 第四步：通过 Cloudflare MCP 清 CDN 缓存 =====
+echo "🧹 4/4 通过 Cloudflare MCP 清除字体缓存..."
+MCP_PROMPT=$(cat <<PROMPT
+Use only the configured Cloudflare API MCP server cloudflare-api through codemode, with its search and execute tools. Do not use shell, direct HTTP, or any other integration.
 
-if echo "$RESULT" | python -c "import sys,json; d=json.load(sys.stdin); sys.exit(0 if d.get('success') else 1)" 2>/dev/null; then
-  echo "✅ 缓存清除成功"
-else
-  echo "⚠️  缓存清除失败: $(echo "$RESULT" | python -c 'import sys,json; print(json.load(sys.stdin).get(\"errors\",[{}])[0].get(\"message\",\"unknown\"))' 2>/dev/null || echo 'unknown')"
+Purge exactly one cached file URL: $PURGE_URL
+
+Use the MCP search tool to confirm the Cloudflare API zone lookup and purge_cache endpoints. Then use the MCP execute tool to GET /zones with the exact name filter xiyuan.wiki. Continue only if exactly one returned zone has the exact name xiyuan.wiki. If not, do not make a purge call.
+
+For exactly one match, use the MCP execute tool to POST /zones/{zone_id}/purge_cache with body {"files":["$PURGE_URL"]}. Do not purge all, prefixes, or any other URLs. Do not include account identifiers or credentials in your response.
+
+Return exactly one JSON object on one line and nothing else. Return {"zone_matches":1,"purge_success":true} only when Cloudflare confirms success. On any failure return {"zone_matches":N,"purge_success":false}, where N is the exact match count if known, otherwise 0.
+PROMPT
+)
+if ! MCP_RESULT=$(pi --print --no-session --no-context-files --tools +codemode "$MCP_PROMPT"); then
+  echo "❌ Cloudflare MCP 缓存清理调用失败。" >&2
+  exit 1
 fi
+if ! printf '%s\n' "$MCP_RESULT" | python -c 'import json,sys; d=json.load(sys.stdin); sys.exit(0 if d.get("zone_matches") == 1 and d.get("purge_success") is True else 1)' 2>/dev/null; then
+  echo "❌ Cloudflare MCP 未确认对唯一字体 URL 清理成功：" >&2
+  printf '%s\n' "$MCP_RESULT" >&2
+  exit 1
+fi
+echo "✅ Cloudflare MCP 已清理指定字体 URL"
 
 echo ""
 echo "🎉 发布完成！"
