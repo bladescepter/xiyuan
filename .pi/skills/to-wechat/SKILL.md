@@ -1,74 +1,81 @@
 ---
 name: to-wechat
-description: 把博客文章发布到微信公众号草稿箱 — 自动传图、business-navy 排版、直达草稿箱
+description: 把博客文章转换为微信公众号草稿；Python 主脚本支持 Linux、macOS、Windows
 ---
 
 ## 触发词
 
-用户说"发公众号"、"同步到微信"、"微信公众号"时，或发布博客后主动询问要不要同步到微信。
+用户说“发公众号”“同步到微信”“微信公众号”时，或发布博客后主动询问要不要同步到微信。
 
-## 前提条件
+## 能力边界
 
-- 微信公众号 AppID + AppSecret 在本地 `C:/Users/blade/OneDrive/DEV/setting-env/.env`（`WX_APPID` / `WX_APPSECRET`）
-- 公众号 IP 白名单只认 **VPS IP 119.28.143.201**（本地 IP 不在白名单）→ 脚本自动起 SSH 动态隧道（`ssh -N -D 1089`），微信 API 请求经 VPS 出口
-- 文章 Markdown 在本地 `C:\Obsidian\4_创作\Blog\`（发布时同步到本仓库 `src/content/posts/`），含完整 frontmatter（slug、title、author）
+- 脚本调用微信 [`draft/add` 新增草稿接口](https://developers.weixin.qq.com/doc/service/api/draftbox/draftmanage/api_draft_add.html)，只创建公众号草稿，不会自动群发；最终由用户在公众号后台预览、编辑并发布。
+- 微信接口要求图文草稿提供永久素材 `thumb_media_id`；封面缺失或上传失败时停止创建草稿。
+- 封面通过永久素材接口上传，会占用公众号永久素材配额；正文图片通过 `uploadimg` 上传。
+- 新建草稿等写接口不自动重试，避免网络超时后重复创建。
 
-## 工作流
+## 跨平台要求
 
-### 一键发布（本地 Git Bash 运行）
+主逻辑为 `scripts/to-wechat.py`，使用 Python 3.8+、`curl` 和 OpenSSH（`ssh`），不依赖 Windows 盘符、Git Bash 专有路径、`cygpath` 或 `taskkill`。含 WebP 正文图时还需 Pillow：
 
 ```bash
-bash C:/Users/blade/OneDrive/DEV/blog-deploy/scripts/to-wechat.sh <slug>
+python -m pip install Pillow
 ```
 
-自动完成：
-1. 从本地 `src/content/posts/` 读文章，提取标题、作者、摘要、slug
-2. 起 SSH 隧道（经 VPS 出口满足 IP 白名单，退出时自动清理）
-3. 下载所有图片 → webp 转 png（PIL + cygpath 转 Windows 路径）→ 上传微信 CDN（`uploadimg`，不占素材配额）
-4. 第一张 OG 图（`/posts/{slug}/index.png`）设封面（`add_material` 永久素材）
-5. **business-navy 深蓝+金**主题排版（白底 #ffffff / 深蓝 #0b2445 / 金色 #c9a74a），保留开头 `(ㅅ˘ㅂ˘) Hi~` / 结尾 `( ´ ω ` )ノﾞ Bye~Bye~` 表情装饰
-6. 尾部自动添加"本文首发于 xiyuan.wiki"可点击链接；「阅读原文」= https://xiyuan.wiki/posts/{slug}/
-7. 创建草稿到公众号后台 → 输出 media_id
+直接运行：
 
-### 脚本路径（本地运行，2026-08 起不再依赖旧容器）
+```bash
+python3 scripts/to-wechat.py <slug>
+```
 
-| 文件 | 说明 |
-|------|------|
-| `C:/Users/blade/OneDrive/DEV/blog-deploy/scripts/to-wechat.sh` | 入口：读文章 → SSH 隧道 → 传图 → 调 Python |
-| `C:/Users/blade/OneDrive/DEV/blog-deploy/scripts/to-wechat.py` | 后端：Markdown→HTML 转换（business-navy 样式）+ 草稿 API |
+也可用 Bash 启动器：
 
-> 旧路径 `/opt/data/scripts/`（容器内）与 `HOST=ubuntu@172.17.0.1`（容器 IP）已废弃，2026-08 本地化改造时移除。
+```bash
+bash scripts/to-wechat.sh <slug>
+```
 
-### API 端点
+在 Windows 上可用 Python Launcher，例如 `py -3 scripts/to-wechat.py <slug>`。脚本所在仓库目录自动决定文章源目录；也可用 `--posts-dir` 指定。
 
-使用 `/cgi-bin/draft/add`（非 `/cgi-bin/draft/create`），个人订阅号也可用。
+预览而不调用网络/API：
 
-### 输出文件
+```bash
+python3 scripts/to-wechat.py <slug> --dry-run --preview-html /tmp/wechat-preview.html
+```
 
-| 文件 | 说明 |
-|------|------|
-| `{文章名}_wechat.html` | 本地微信版 HTML，可浏览器打开 → 全选复制 → 粘贴编辑器 |
-| `{文章名}_wechat_draft.json` | 调试用，发送给微信 API 的完整请求体 |
+发布前脚本会检查文章 frontmatter 至少包含 `随笔`、`杜撰`、`打油`、`折腾` 中一个标签；缺失时停止，不创建草稿。
 
-### 发布后
+## 微信 API 凭据
 
-用户登录 https://mp.weixin.qq.com/cgi-bin/appmsg → 草稿箱 → 预览/发布。
+1. 登录[微信开发者平台](https://developers.weixin.qq.com/platform/)，进入已关联的公众号开发配置；后台入口可能随平台调整。
+2. 在公众号开发信息中查看 **AppID（开发者 ID）**；按页面提示生成或重置 **AppSecret（开发者密码）**。若需要接口权限，按平台提示完成开发者授权。
+3. 在接口权限页确认账号具备获取 `access_token`、上传图片/素材及新增草稿所需权限。可用权限因公众号类型和账号状态而异。
+4. 将实际发起 API 请求的出口公网 IP 加入相应 IP 白名单。本项目默认通过 SSH 隧道从 VPS `119.28.143.201` 出口访问；若改用其他 SSH 目标，白名单也须匹配该目标的实际公网出口。只有本机出口已在白名单时才用 `--direct`。
+5. 将凭据保存到本机用户配置目录的 `.env`，不要提交仓库或发送到聊天：
 
-## 注意事项
+```dotenv
+WX_APPID=你的公众号AppID
+WX_APPSECRET=你的公众号AppSecret
+# 可选：覆盖默认 SSH 连接目标/私钥
+WX_SSH_TARGET=ubuntu@119.28.143.201
+WX_SSH_KEY=/你的/SSH私钥路径
+```
 
-- 个人订阅号（未认证）**无法**通过 API 自动群发，只能存草稿箱
-- access_token 有效期 2 小时，脚本每次调用自动获取
-- 封面图走 `add_material`，占用永久素材配额（5000 个上限）
-- 正文图走 `uploadimg`，不占配额
-- 微信编辑器不支持外部字体（`@font-face`），business-navy 使用系统黑体
-- 深色模式：business-navy 是白底深蓝字（接近标准色），微信深色模式可可靠自动反转（此前 warm-orange 米色底 `#fdf8f2` 深色模式下白字压浅底看不清）
-- 本地运行踩坑（2026-08 修复）：
-  - Git Bash 的 `python3` 是 Windows Store 假 shim（退出码 49），必须用 `python`
-  - Windows Python 不认 Git Bash `/tmp` 路径，文件路径用 `cygpath -w` 转换
-  - `add_material` 上传在 Git Bash `/tmp` 路径下 curl 报 26，同样用 cygpath 转 Windows 路径解决
-  - Windows GBK 控制台打印 emoji 会 UnicodeEncodeError，`sys.stdout.reconfigure(encoding='utf-8')` 兜底
-  - SSH 隧道清理：`pkill` 杀不掉 Windows ssh.exe，用 `kill $SSH_PID` + `taskkill //F //PID`
+默认凭据文件路径：
 
-## 主题定制
+- Linux：`${XDG_CONFIG_HOME:-~/.config}/xiyuan/.env`
+- macOS：`~/Library/Application Support/xiyuan/.env`
+- Windows：`%APPDATA%\xiyuan\.env`
 
-当前固定使用 business-navy 主题（白底 #ffffff / 深蓝 #0b2445 / 金色 #c9a74a，li 前缀 ◆）。如需更换，参考 [jiji262/wechat-publisher](https://github.com/jiji262/wechat-publisher) 的 `assets/themes/` 下的 15 套 JSON 主题文件（在线预览：https://linghucong.js.org/wechat-publisher/），修改 `to-wechat.py` 中的 `STYLES` 字典色值。
+其他路径可用 `--env-file <路径>` 或环境变量 `WX_ENV_FILE` 指定。Linux/macOS 文件权限应限制为当前用户（例如 `chmod 600 <路径>`）。**不要把 AppSecret、access_token 或密钥贴到聊天里。**若 AppSecret 不再可用，在平台重置后更新本地 `.env`。
+
+## 默认流程
+
+1. 从 `src/content/posts/` 按 frontmatter `slug` 或文件名定位文章。
+2. 校验标题、作者、摘要和分类标签。
+3. 通过 OpenSSH 建立至配置 SSH 目标的本机 SOCKS5 隧道（默认 `ubuntu@119.28.143.201`）；也可设置 `WX_SSH_TARGET`、`WX_SSH_KEY`、`WX_SSH_PORT` 或相应命令行参数。
+4. 使用本地 `.env` 获取短期 access token；凭据和 token 不打印、不写入日志或 Git。
+5. 上传正文图片；WebP 转 PNG；用博客 OG 图作为公众号永久素材封面。
+6. 按 business-navy 主题转换 Markdown，增加博客原文链接并调用新增草稿接口。
+7. 报告草稿结果；用户在公众号后台检查草稿后自行发布。
+
+正文图或必需封面上传失败会明确报错并停止创建草稿；封面上传使用永久素材，若之后新增草稿失败，永久素材可能仍已占用额度。不会在失败后静默继续。
